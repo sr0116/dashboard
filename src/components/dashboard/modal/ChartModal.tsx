@@ -4,6 +4,7 @@ import LineChartFull from "@/components/dashboard/charts/full/LineChartFull";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { closeModal } from "@/store/uiSlice";
 import RegionChartFull from "@/components/dashboard/charts/full/RegionChartFull";
+import TreemapChartFull from "@/components/dashboard/charts/full/TreemapChartFull";
 
 export default function ChartModal() {
     const modal = useAppSelector((state) => state.ui.modal);
@@ -18,7 +19,7 @@ export default function ChartModal() {
             case "region":
                 return <RegionChartFull />;
             case "treemap":
-                return <RegionChartFull />;
+                return <TreemapChartFull />;
             default:
                 return null;
         }

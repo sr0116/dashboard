@@ -1,12 +1,11 @@
 // /lib/utils/generateColors.ts
+import { TEMPLATE_COLORS } from "./colorPalette";
 
 export function generateColors(count: number) {
     const colors = [];
-    const hueStep = 360 / count;
-
     for (let i = 0; i < count; i++) {
-        const hue = i * hueStep;
-        colors.push(`hsl(${hue}, 70%, 60%)`);
+        const color = TEMPLATE_COLORS[i % TEMPLATE_COLORS.length];
+        colors.push(color);
     }
     return colors;
 }

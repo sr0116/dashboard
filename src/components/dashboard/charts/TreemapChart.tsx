@@ -1,10 +1,10 @@
 "use client";
 
-import { useAppSelector } from "@/store/hooks";
 import { Treemap, ResponsiveContainer } from "recharts";
-import {useFilteredSales} from "@/lib/hooks/useFilteredSales";
+import { useFilteredSales } from "@/lib/hooks/useFilteredSales";
+import { getGradientColor } from "@/lib/utils/getGradientColor";
 
-export default function TreemapChart({ full = false }: { full?: boolean }) {
+export default function TreemapChart() {
     const sales = useFilteredSales();
 
     const grouped = sales.reduce((acc: any, cur: any) => {
@@ -29,8 +29,40 @@ export default function TreemapChart({ full = false }: { full?: boolean }) {
                     <Treemap
                         data={chartData}
                         dataKey="size"
-                        stroke="#fff"
-                        fill="#6366f1"
+                        stroke="#ffffffaa"
+                        content={({ x, y, width, height, index, name }: any) => {
+                            const { fill } = getGradientColor(index);
+
+                            return (
+                                <g>
+                                    <rect
+                                        x={x}
+                                        y={y}
+                                        width={width}
+                                        height={height}
+                                        fill={fill}
+                                        rx={6}
+                                        stroke="#ffffffcc"
+                                    />
+
+                                    {/* 작은 박스는 텍스트 표시 X */}
+                                    {width > 70 && height > 26 && (
+                                        <text
+                                            x={x + 10}
+                                            y={y + 20}
+                                            fill="white"
+                                            fontSize={13}
+                                            fontWeight={500}
+                                            stroke="rgba(0,0,0,0.25)"
+                                            strokeWidth={0.8}
+                                            style={{ userSelect: "none" }}
+                                        >
+                                            {name}
+                                        </text>
+                                    )}
+                                </g>
+                            );
+                        }}
                     />
                 </ResponsiveContainer>
             </div>
