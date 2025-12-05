@@ -5,6 +5,7 @@ import salesReducer from "./salesSlice";
 import filterReducer from "./filterSlice";
 import uiReducer from "./uiSlice";
 
+// store
 export const store = configureStore({
     reducer: {
         sales: salesReducer,

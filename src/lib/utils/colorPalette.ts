@@ -16,41 +16,24 @@ export const PALETTE = {
 };
 
 export const TEMPLATE_COLORS = [
-    "#7C3AED", // 진보라
-    "#8B5CF6",
-    "#A78BFA",
-    "#C4B5FD",
-    "#DDD6FE",
-
-    "#6366F1", // 인디고
-    "#818CF8",
-    "#A5B4FC",
-    "#C7D2FE",
-
-    "#4F46E5", // 딥 인디고
-    "#6D5FFC",
-    "#8EA2FF",
+    "#7C3AED", "#8B5CF6", "#A78BFA", "#C4B5FD", "#DDD6FE",
+    "#6366F1", "#818CF8", "#A5B4FC", "#C7D2FE",
+    "#4F46E5", "#6D5FFC", "#8EA2FF",
 ];
 
-
-// Treemap, Bar, Pie 등 공통 컬러 시퀀스
-export const COLOR_SEQUENCE = [
-    PALETTE.indigo,
-    PALETTE.sky,
-    PALETTE.purple,
-    PALETTE.cyan,
-    PALETTE.blue,
-    PALETTE.teal,
-    PALETTE.green,
-    PALETTE.amber,
-    PALETTE.orange,
-    PALETTE.red,
-    PALETTE.pink,
-    PALETTE.fuchsia,
+export const COLOR_SCALE = [
+    "hsl(228, 75%, 90%)",
+    "hsl(255, 75%, 72%)",
+    "hsl(268, 75%, 55%)",
+    "hsl(280, 80%, 42%)",
 ];
 
+export function getGradientColorByValue(value: number, min: number, max: number) {
+    if (max === min) return COLOR_SCALE[2];
+    const ratio = (value - min) / (max - min);
 
-
-export function getColor(i: number) {
-    return COLOR_SEQUENCE[i % COLOR_SEQUENCE.length];
+    if (ratio < 0.33) return COLOR_SCALE[0];
+    if (ratio < 0.66) return COLOR_SCALE[1];
+    if (ratio < 0.9)  return COLOR_SCALE[2];
+    return COLOR_SCALE[3];
 }

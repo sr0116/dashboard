@@ -12,6 +12,12 @@ import {
     CartesianGrid,
 } from "recharts";
 
+// 보라/인디고 계열 팔레트
+const REGION_COLORS = [
+    "#7C3AED", "#8B5CF6", "#A78BFA", "#C4B5FD", "#DDD6FE",
+    "#6366F1", "#818CF8", "#A5B4FC", "#C7D2FE",
+];
+
 export default function RegionChartFull() {
     const sales = useFilteredSales();
 
@@ -51,7 +57,7 @@ export default function RegionChartFull() {
 
     if (selectedRegion === "전체 지역") {
         // ✔ 전체 지역 → 지역별 합계
-        const regionGrouped = sales.reduce((acc, cur) => {
+        const regionGrouped = filteredData.reduce((acc, cur) => {
             acc[cur.region] = (acc[cur.region] || 0) + cur.salesAmount;
             return acc;
         }, {});
@@ -96,7 +102,7 @@ export default function RegionChartFull() {
                     className="border px-3 py-2 rounded"
                 >
                     {regionList.map((r) => (
-                        <option key={r} value={r}>{r}</option>
+                        <option key={r}>{r}</option>
                     ))}
                 </select>
 
@@ -108,7 +114,7 @@ export default function RegionChartFull() {
                         className="border px-3 py-2 rounded"
                     >
                         {sigunguList.map((sg) => (
-                            <option key={sg} value={sg}>{sg}</option>
+                            <option key={sg}>{sg}</option>
                         ))}
                     </select>
                 )}
@@ -125,21 +131,30 @@ export default function RegionChartFull() {
             </div>
 
             {/* 차트 */}
-            <div className="w-full h-[500px]">
-                <ResponsiveContainer>
+            <div className="w-full h-[65vh]"> {/* ← 전체 화면의 80% 크기로 확장 */}
+                <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={chartData}>
-                        <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                        <CartesianGrid strokeDasharray="3 3" opacity={0.25} />
+
                         <XAxis
                             dataKey="name"
                             interval={0}
                             angle={-35}
                             height={70}
                             tick={{ fontSize: 11 }}
-                            tickFormatter={(v) => v.length > 6 ? v.slice(0, 6) + "…" : v}
+                            tickFormatter={(v) =>
+                                v.length > 6 ? v.slice(0, 6) + "…" : v
+                            }
                         />
-                        <YAxis />
+
+                        <YAxis domain={["auto", "auto"]} />
                         <Tooltip />
-                        <Bar dataKey="value" fill="#4f46e5" />
+
+                        <Bar
+                            dataKey="value"
+                            fill={REGION_COLORS[0]}
+                            radius={[6, 6, 0, 0]}
+                        />
                     </BarChart>
                 </ResponsiveContainer>
             </div>

@@ -20,29 +20,62 @@ export default function LineChartFull() {
     const [unit, setUnit] = useState(1000);
     const [year, setYear] = useState("전체");
 
+    // -----------------------------
+    // ① 연도별 멀티라인 데이터 생성
+    // -----------------------------
+    const yearlyMap: Record<string, Record<number, number>> = {};
+    const profitMap: Record<string, Record<number, number>> = {};
+
+    sales.forEach((item) => {
+        const month = item.monthName;
+        const y = item.year;
+
+        if (!yearlyMap[month]) yearlyMap[month] = {};
+        if (!profitMap[month]) profitMap[month] = {};
+
+        yearlyMap[month][y] =
+            (yearlyMap[month][y] || 0) + item.salesAmount;
+
+        profitMap[month][y] =
+            (profitMap[month][y] || 0) + item.netProfit;
+    });
+
+    const multiSalesData = Object.entries(yearlyMap).map(([month, vals]) => ({
+        month,
+        ...Object.fromEntries(
+            Object.entries(vals).map(([y, v]) => [y, v / unit])
+        ),
+    }));
+
+    const multiProfitData = Object.entries(profitMap).map(([month, vals]) => ({
+        month,
+        ...Object.fromEntries(
+            Object.entries(vals).map(([y, v]) => [y, v / unit])
+        ),
+    }));
+
+
+    // ② 개별 연도 선택 시 단일 라인용 데이터
     const filtered = year === "전체"
         ? sales
         : sales.filter((s) => s.year === Number(year));
 
-    const monthSales: Record<string, number> = filtered.reduce((acc, cur) => {
-        acc[cur.monthName] = (acc[cur.monthName] || 0) + cur.salesAmount;
-        return acc;
-    }, {});
+    const singleSalesData = Object.entries(
+        filtered.reduce((acc, cur) => {
+            acc[cur.monthName] =
+                (acc[cur.monthName] || 0) + cur.salesAmount;
+            return acc;
+        }, {} as Record<string, number>)
+    ).map(([month, value]) => ({ month, value: value / unit }));
 
-    const monthProfit: Record<string, number> = filtered.reduce((acc, cur) => {
-        acc[cur.monthName] = (acc[cur.monthName] || 0) + cur.netProfit;
-        return acc;
-    }, {});
+    const singleProfitData = Object.entries(
+        filtered.reduce((acc, cur) => {
+            acc[cur.monthName] =
+                (acc[cur.monthName] || 0) + cur.netProfit;
+            return acc;
+        }, {} as Record<string, number>)
+    ).map(([month, value]) => ({ month, value: value / unit }));
 
-    const salesChartData = Object.entries(monthSales).map(([month, value]) => ({
-        month,
-        value: value / unit,
-    }));
-
-    const profitChartData = Object.entries(monthProfit).map(([month, value]) => ({
-        month,
-        value: value / unit,
-    }));
 
     return (
         <div className="space-y-10 w-full">
@@ -71,32 +104,53 @@ export default function LineChartFull() {
                 </select>
             </div>
 
-            {/* 1) 선 그래프 */}
+            {/* 1) 판매액 선 그래프 */}
             <div className="w-full h-[320px]">
                 <ResponsiveContainer width="100%" height="100%">
                     <LineChart
-                        data={salesChartData}
+                        data={year === "전체" ? multiSalesData : singleSalesData}
                         margin={{ top: 10, right: 20, left: 0, bottom: 10 }}
                     >
                         <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
                         <XAxis dataKey="month" />
                         <YAxis tickFormatter={(v) => v.toLocaleString()} />
                         <Tooltip />
-                        <Line
-                            type="monotone"
-                            dataKey="value"
-                            stroke="#6366f1"
-                            strokeWidth={3}
-                        />
+
+                        {year === "전체"
+                            ? Object.keys(multiSalesData[0] || {})
+                                .filter((k) => k !== "month")
+                                .map((y, idx) => (
+                                    <Line
+                                        key={y}
+                                        type="monotone"
+                                        dataKey={y}
+                                        stroke={[
+                                            "#6366F1",
+                                            "#10B981",
+                                            "#F59E0B",
+                                            "#EF4444",
+                                            "#8B5CF6",
+                                        ][idx % 5]}
+                                        strokeWidth={2}
+                                    />
+                                ))
+                            : (
+                                <Line
+                                    type="monotone"
+                                    dataKey="value"
+                                    stroke="#6366F1"
+                                    strokeWidth={3}
+                                />
+                            )}
                     </LineChart>
                 </ResponsiveContainer>
             </div>
 
-            {/* 2) Gradient Area Chart */}
-            <div className="w-full h-[320px] mt-16">  {/* ← 간격 추가 */}
+            {/* 2) 이익 Area Chart */}
+            <div className="w-full h-[320px] mt-16">
                 <ResponsiveContainer width="100%" height="100%">
                     <AreaChart
-                        data={profitChartData}
+                        data={year === "전체" ? multiProfitData : singleProfitData}
                         margin={{ top: 20, right: 20, left: 0, bottom: 0 }}
                     >
                         <defs>
@@ -108,18 +162,32 @@ export default function LineChartFull() {
                         <XAxis dataKey="month" />
                         <YAxis tickFormatter={(v) => v.toLocaleString()} />
                         <Tooltip />
-                        <Area
-                            type="monotone"
-                            dataKey="value"
-                            stroke="#a855f7"
-                            fillOpacity={1}
-                            fill="url(#profitColor)"
-                        />
+
+                        {year === "전체"
+                            ? Object.keys(multiProfitData[0] || {})
+                                .filter((k) => k !== "month")
+                                .map((y, idx) => (
+                                    <Area
+                                        key={y}
+                                        type="monotone"
+                                        dataKey={y}
+                                        stroke="#a855f7"
+                                        fillOpacity={1}
+                                        fill="url(#profitColor)"
+                                    />
+                                ))
+                            : (
+                                <Area
+                                    type="monotone"
+                                    dataKey="value"
+                                    stroke="#a855f7"
+                                    fillOpacity={1}
+                                    fill="url(#profitColor)"
+                                />
+                            )}
                     </AreaChart>
                 </ResponsiveContainer>
             </div>
-
-
         </div>
     );
 }

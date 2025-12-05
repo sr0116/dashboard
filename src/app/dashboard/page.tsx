@@ -71,7 +71,7 @@ export default function DashboardPage() {
             {/* 전체 시각화 모드 */}
             {mode === "full" && (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <TreemapChart full />
+                    <TreemapChart  />
                     <LineChart  />
                     <GradientAreaChart full />
                     <RegionChart full />

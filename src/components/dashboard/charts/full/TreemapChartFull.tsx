@@ -1,33 +1,46 @@
 "use client";
 
-import { ResponsiveContainer, Treemap } from "recharts";
+import { Treemap, ResponsiveContainer } from "recharts";
+import ChartFilterBar from "@/components/dashboard/filters/ChartFilterBar";
 import { useFilteredSales } from "@/lib/hooks/useFilteredSales";
-import { getGradientColor } from "@/lib/utils/getGradientColor";
+import { buildTreemapData } from "@/lib/utils/buildTreemapData";
+import { getGradientColorByValue } from "@/lib/utils/getGradientColor";
 
-export default function TreemapChartFull() {
+export default function TreemapChartFull({
+                                             mode = "categoryName",
+                                         }: {
+    mode?: "categoryName" | "productCategoryName" | "productName";
+}) {
     const sales = useFilteredSales();
+    const data = buildTreemapData(sales, mode);
 
-    const grouped = sales.reduce((acc: any, cur: any) => {
-        const key = cur.categoryName;
-        acc[key] = (acc[key] || 0) + cur.salesAmount;
-        return acc;
-    }, {});
-
-    const chartData = Object.entries(grouped).map(([name, size]) => ({
-        name,
-        size,
-    }));
+    // size 값 모두 추출
+    const values = data.flatMap((d: any) => getAllSizes(d));
+    const min = Math.min(...values);
+    const max = Math.max(...values);
 
     return (
         <div className="space-y-6 w-full h-full">
+
+            <ChartFilterBar />
+
+            <div className="flex items-center gap-3">
+                <div className="w-60 h-3 bg-gradient-to-r from-violet-500 to-pink-400 rounded"></div>
+                <span className="text-sm text-gray-500">매출 낮음 → 높음</span>
+            </div>
+
             <div className="w-full h-[600px]">
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer>
                     <Treemap
-                        data={chartData}
+                        data={data}
                         dataKey="size"
-                        stroke="#ffffffaa"
-                        content={({ x, y, width, height, index, name }: any) => {
-                            const { fill } = getGradientColor(index);
+                        nameKey="name"
+                        stroke="#ffffff55"
+                        animationBegin={0}
+                        animationDuration={0}
+                        content={(props: any) => {
+                            const { x, y, width, height, name, size } = props;
+                            const fill = getGradientColorByValue(size ?? 0, min, max);
 
                             return (
                                 <g>
@@ -37,20 +50,19 @@ export default function TreemapChartFull() {
                                         width={width}
                                         height={height}
                                         fill={fill}
-                                        rx={10}
-                                        stroke="#ffffffcc"
+                                        rx={8}
+                                        stroke="#fff"
                                     />
 
-                                    {width > 80 && height > 32 && (
+                                    {width > 90 && height > 35 && (
                                         <text
-                                            x={x + 12}
-                                            y={y + 22}
+                                            x={x + 14}
+                                            y={y + 26}
                                             fill="white"
-                                            fontWeight={500}
-                                            fontSize={15}
-                                            stroke="rgba(0,0,0,0.25)"
-                                            strokeWidth={1}
-                                            style={{ userSelect: "none" }}
+                                            fontSize={16}
+                                            fontWeight={700}
+                                            stroke="rgba(0,0,0,0.15)"
+                                            strokeWidth={0.5}
                                         >
                                             {name}
                                         </text>
@@ -61,6 +73,17 @@ export default function TreemapChartFull() {
                     />
                 </ResponsiveContainer>
             </div>
+
         </div>
     );
+}
+
+// size 모두 추출
+function getAllSizes(node: any): number[] {
+    let arr = [];
+    if (node.size) arr.push(node.size);
+    if (node.children) {
+        node.children.forEach((c: any) => arr.push(...getAllSizes(c)));
+    }
+    return arr;
 }
